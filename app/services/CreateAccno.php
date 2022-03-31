@@ -1,4 +1,4 @@
-<?php include_once("../database/connection.php");
+<?php
 class CreateAccount
 {
 
@@ -8,7 +8,7 @@ class CreateAccount
         for ($i = 1; $i <= 12; $i++) {
             $acc_no .= mt_rand(0, 9);
         }
-        $acc_no = "DSFS" . $acc_no;
+        $acc_no = "DAT" . $acc_no;
         $dbconn = new Dbconn();
         $getconn = $dbconn->getconnection();
         $sql = 'select * from customer where acc_no=?';

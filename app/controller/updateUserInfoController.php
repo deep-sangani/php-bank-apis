@@ -1,37 +1,50 @@
-<?php require_once("../database/connection.php");
-require_once("../services/MakeImgUrl.php");
+<?php 
+require_once(__DIR__."/../services/StoreImg.php");
 
-$first_name = $_POST["first_name"];
-$last_name = $_POST["last_name"];
-$email_add = $_POST["email_add"];
-$street_add = $_POST["street_add"];
-$city = $_POST["city"];
-$pincode = $_POST["pincode"];
-$state = $_POST["state"];
-$account_type = $_POST["account_type"];
-$pan_card = $_POST["pan_card"];
-$mobile_no = $_POST["mobile_no"];
-$aadhar_no = $_POST["aadhar_no"];
-$acc_no = $_POST["acc_no"];
+$data = json_decode(file_get_contents('php://input'), true);
+$street_add = $data["street_address"];
+$city = $data["city"];
+$pincode = $data["postal_code"];
+$state = $data["state"];
+$mobile_no = $data["mobile_no"];
+$acc_no = $data["acc_no"];
+$img = isset($data["img"]) ? $data["img"] : null;
 
 
 
+
+if($img){
+    $location = dirname(__DIR__,2) . "/uploads/{$acc_no}.png";
+// store img
+
+$si = new StoreImg();
+$si->delete_image($location);
+$si->base64_to_jpeg($img, $location);
+}
 
 try {
     $dbconn = new Dbconn();
     $getconn = $dbconn->getconnection();
 
 
-    $sql = "update customer set first_name=?,last_name=?,email_address=?,street_address=?,city=?,state=?,account_type=?,pan_card=?,mobile_no=?,aadhar_card=?,postal_code=? where acc_no=?";
+    $sql = "update customer set street_address=?,city=?,state=?,mobile_no=?,postal_code=? where acc_no=?";
 
     $stmt = $getconn->prepare($sql);
 
-    $result =  $stmt->execute([$first_name, $last_name, $email_add, $street_add, $city, $state, $account_type, $pan_card, $mobile_no, $aadhar_no, $pincode, $acc_no]);
+    $result =  $stmt->execute([ $street_add, $city, $state, $mobile_no, $pincode, $acc_no]);
     if ($result == 1) {
-        $MakeImgUrl = new MakeImgUrl();
-        $url = $MakeImgUrl->getimgurl($acc_no);
-        header("Location:/resources/views/userInfo.php?msg=User info updated successfully&acc_no={$acc_no}&acc_img_url={$url}");
+       
+        $res = array();
+        $res["status"] = "success";
+        $res["message"] = "customer updated successfully";
+        http_response_code(200);
+        echo json_encode($res);
+        
     }
 } catch (PDOException $e) {
-    echo $e;
+    $res = array();
+    $res["status"] = "error";
+    $res["message"] = $e->getMessage();
+    http_response_code(500);
+    echo json_encode($res);
 }

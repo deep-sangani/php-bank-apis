@@ -3,9 +3,9 @@ class Dbconn
 {
   function getconnection()
   {
-    $servername = "localhost";
+    $servername = "localhost:8889";
     $username = "root";
-    $password = "";
+    $password = "root";
     $dbname = "bank";
     $dsn = 'mysql:host=' . $servername . ';dbname=' . $dbname;
     // Create connection
@@ -18,7 +18,7 @@ class Dbconn
       // echo "database connected";
 
     } catch (PDOException $e) {
-      echo $e;
+      throw new PDOException($e->getMessage());
     }
     return $conn;
   }

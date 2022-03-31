@@ -1,40 +1,15 @@
-<?php include_once("../services/Checkacc.php");
-$cus_first_name = $_POST["cus_first_name"];
-$cus_last_name = $_POST["cus_last_name"];
-$acc_no = $_POST["acc_no"];
-$featurename = $_POST["featurename"];
-
+<?php include_once(dirname(__FILE__,2)."/services/Checkacc.php");
+$data = json_decode(file_get_contents('php://input'), true);
+$acc_no = $data["acc_no"];
 
 
 $checkacc = new Checkacc();
-$result = $checkacc->verifiedAcc($cus_first_name, $cus_last_name, $acc_no);
+$result = $checkacc->verifiedAcc($acc_no);
 
-if (isset($result)) {
-    print_r($result);
-    if ($featurename == "deposit") {
-        header("Location:/resources/views/depositBal.php?userexist=true&acc_no={$result}");
-    }
-    if ($featurename == "withdraw") {
-        header("Location:/resources/views/withdrawBal.php?userexist=true&acc_no={$result}");
-    }
-    if ($featurename == "deposit") {
-        header("Location:/resources/views/depositBal.php?userexist=true&acc_no={$result}");
-    }
-    if ($featurename == "deleteacc") {
-        header("Location:/resources/views/deleteAcc.php?userexist=true&acc_no={$result}");
-    }
+if ($result) {
+    echo json_encode(array("status" => "success", "message" => "Account number verified","data" => $result));
+    
 } else {
-
-    if ($featurename == "deposit") {
-        header('Location:/resources/views/depositBal.php?userexist=false');
-    }
-    if ($featurename == "withdraw") {
-        header('Location:/resources/views/withdrawBal.php?userexist=false');
-    }
-    if ($featurename == "deposit") {
-        header('Location:/resources/views/depositBal.php?userexist=false');
-    }
-    if ($featurename == "deleteacc") {
-        header("Location:/resources/views/deleteAcc.php?userexist=false");
-    }
+    http_response_code(404);
+    echo json_encode(array("status" => "error", "message" => "Account number not verified"));
 }
